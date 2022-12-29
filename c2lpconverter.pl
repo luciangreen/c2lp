@@ -1,7 +1,7 @@
 
-% -> p(*grid1,*grid2,...){ add_to_grid(*grid1,*grid3);}
+%  p(grid1,grid2,...){ add_to_grid(grid1,grid3);}
 
-%  - p(Grid1,Grid2,...) :- add_to_grid(Grid1,Grid3)...
+%  -> p(Grid1,Grid2,...) :- add_to_grid(Grid1,Grid3)...
 
 
 :-include('../listprologinterpreter/la_strings.pl').
@@ -154,9 +154,10 @@ name10(XXs) --> [X],
 name11(X1) --> %name101(X11),
 
 %name1(X1) -->
- [X], {%trace,
- S="*",
- string_codes(S,[X])}, name101(X11a),
+ %[X], %{%trace,
+ %S="",
+ %string_codes(S,[X])}, 
+ name101(X11a),
 
 {atom_concat('',X11a,X11)},
 
