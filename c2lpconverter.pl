@@ -19,7 +19,7 @@ string_codes("a.\nb(C,D).\nef('A'):-(h(a)->true;true),!.",A),phrase(file(B),A),w
 use_module(library(pio)).
 use_module(library(dcg/basics)).
 
-%:- include('la_strings.pl').
+%:-include('la_strings.pl').
 
 c2lpconverter([string,String],List3) :-
 	%File1="test1.pl",
