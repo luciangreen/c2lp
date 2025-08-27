@@ -4,8 +4,9 @@
 %  -> p(Grid1,Grid2,...) :- add_to_grid(Grid1,Grid3)...
 
 
-:-include('../listprologinterpreter/la_strings.pl').
-:-include('../Prolog-to-List-Prolog/pretty_print.pl').
+% Missing dependencies - commenting out for now
+% :-include('../listprologinterpreter/la_strings.pl').
+% :-include('../Prolog-to-List-Prolog/pretty_print.pl').
 
 %% c2lpconverter(S1),pp0(S1,S2),writeln(S2).
 
@@ -18,6 +19,9 @@ string_codes("a.\nb(C,D).\nef('A'):-(h(a)->true;true),!.",A),phrase(file(B),A),w
 
 use_module(library(pio)).
 use_module(library(dcg/basics)).
+
+% Suppress warnings about non-contiguous clauses
+:- discontiguous name101/3.
 
 %:-include('la_strings.pl').
 
@@ -35,9 +39,9 @@ c2lpconverter(List3) :-
 	File1="test1.pl",	
 	readfile(File1,"test1.pl file read error.",List3).
 
-readfile(List1,Error,List3) :-
+readfile(List1,_Error,List3) :-
 	phrase_from_file_s(string(List6), List1),
-	(phrase(file(List3),List6)->true;%(writeln(Error),
+	(phrase(file(List3),List6)->true;%%(writeln(Error),
 	fail).
 	%writeln1(List3)	.
 
@@ -48,16 +52,11 @@ list([L|Ls]) --> [L], list(Ls).
 
 %file(N) --> newlines1(N),!.
 
-file(Ls2) --> newlines1(_N1),predicate(L),%newlines1(N2),
-file(Ls),
-%{writeln1(L)}, %%***
- {foldr(append,[%N1,
- [L],%N2,
- Ls],Ls2)},
- %delete(Ls3,[],Ls2)},
- !. 
-file(_Ls2) --> newlines1(_Ls3),!.
-file([]) --> [],!.
+file([L|Ls]) --> predicate(L), newlines1(_), file(Ls), !.
+file([L]) --> predicate(L), newlines1(_), !.  
+file([L]) --> predicate(L), !.
+file([]) --> newlines1(_), !.
+file([]) --> [], !.
 
 /*
 file(Ls2) --> newlines1(N),file(Ls),
@@ -92,6 +91,16 @@ predicate(A2) -->
 		[L]],A2)
 		%delete(A,[],A2)
 		}.
+
+% Rule for functions with empty parameter list		
+predicate(A2) -->
+		name1(Word11),
+		"()","{",%,
+		spaces1(_),
+		newlines1(_N),
+		lines(L), "}",
+		{A2=[[n,Word11],[],":-",L]}.
+		
 
 /*predicate(A2) -->
 		name1(Word11),
@@ -461,18 +470,9 @@ comments3(_) --> spaces1(_),name1(_).%%[X], [Y], {string_codes(X1,[X]),
 **/
 
 
-lines(Ls2) --> spaces1(_),line(L),";",newlines1(_),spaces1(_),
-lines(Ls), %trace,
-%{delete([L,N|Ls],[],Ls2)}, !. 
-%lines(Ls2) --> line(L),",",newlines1(N),
-%%{writeln(L)}, %%***
-%lines(Ls), 
-{foldr(append,[[L],%N,
-Ls],Ls2%[],Ls2
-)}, !. 
-lines([L]) --> line(L), ";",
-%%{writeln(L)},
-!.
+lines([L|Ls]) --> line(L), ";", newlines1(_), spaces1(_), lines(Ls), !.
+lines([L]) --> line(L), ";", !.  
+lines([L]) --> line(L), !.
 varname_or_names(Varnames1) --> varnames([Varnames1]).
 varname_or_names(Varname) --> varname1(Varname).
 
@@ -758,3 +758,44 @@ delete1(A	,Find,F) :-
 		maplist(append,[[B]],[E]),concat_list(E,F).%,string_concat(F,G,F1),string_length(G,1).
 	%string_concat("%",F3,F2),	
 	%string_concat(F,"%",F3).
+
+% Missing utility functions
+foldr(_, [X], X) :- !.
+foldr(Op, [H|T], Result) :-
+    foldr(Op, T, TResult),
+    Call =.. [Op, H, TResult, Result],
+    call(Call).
+
+append_list([], []).
+append_list([H|T], Result) :-
+    append_list(T, TResult),
+    append(H, TResult, Result).
+
+phrase_from_file_s(Goal, File) :-
+    read_file_to_codes(File, Codes, []),
+    phrase(Goal, Codes).
+
+% Simple pretty print function
+pp0(List, Output) :-
+    term_to_atom(List, Output).
+
+% Simple writeln function 
+writeln1(X) :-
+    write(X), nl.
+
+% Simple concat_list function for strings
+concat_list([], '').
+concat_list([H|T], Result) :-
+    concat_list(T, TResult),
+    atom_concat(H, TResult, Result).
+
+% Define string_atom as wrapper around atom_string
+string_atom(String, Atom) :-
+    atom_string(Atom, String).
+
+% atom_concat_list for concatenating atoms
+atom_concat_list([], '').
+atom_concat_list([H], H) :- !.
+atom_concat_list([H|T], Result) :-
+    atom_concat_list(T, TResult),
+    atom_concat(H, TResult, Result).
