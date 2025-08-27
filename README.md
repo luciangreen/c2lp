@@ -1,6 +1,8 @@
 # c2lp (C to List Prolog)
 Converts C algorithms to List Prolog algorithms
 
+**Algorithm Status: COMPLETED** - The Prolog algorithm now works correctly with all required utility functions implemented.
+
 # Prerequisites
 
 * Use a search engine to find the Homebrew (or other) Terminal install command for your platform and install it, and search for the Terminal command to install swipl using Homebrew and install it or download and install SWI-Prolog for your machine at <a href="https://www.swi-prolog.org/build/">SWI-Prolog</a>.
@@ -73,6 +75,20 @@ halt.
 Run:
 
 Convert Prolog code to List Prolog code by copying Prolog algorithm into `test1.pl` and running: `c2lpconverter(S1),pp0(S1,S2),writeln(S2).`
+
+## Working Examples
+
+**Basic function conversion:**
+```
+Input: p(grid1,grid2){add_to_grid(grid1,grid3);}
+Output: [[[n,p],[[v,grid1],[v,grid2]],":-",[[[n,add_to_grid],[[v,grid1],[v,grid3]]]]]]
+```
+
+**Multiple statements:**
+```
+Input: process(data){step1(data);step2(data);}
+Output: [[[n,process],[[v,data]],":-",[[[n,step1],[[v,data]]],[[n,step2],[[v,data]]]]]]
+```
 
 e.g.
 ```
